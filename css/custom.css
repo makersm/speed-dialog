@@ -1,0 +1,8 @@
+img { cursor: pointer; }
+.card { margin-top: 40px; border: 0; }
+.card-body { padding: 0; }
+.card-text:last-child { font-size: 2rem; text-align: center; }
+.display-4 { font-weight: 500; }
+.input-group { margin-top: 30px; }
+.input-group input,button { font-size: 2rem; border: none; color: transparent; }
+.btn { font-size: 2rem; }
