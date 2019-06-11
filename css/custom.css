@@ -6,3 +6,8 @@ img { cursor: pointer; }
 .input-group { margin-top: 30px; }
 .input-group input,button { font-size: 2rem; border: none; color: transparent; }
 .btn { font-size: 2rem; }
+.modal-title { font-size: 2rem; }
+.modal-body label { font-size: 3rem;}
+.modal-body input { font-size: 3rem;}
+.modal-dialog { min-width: 80vw; }
+#saveFavorites { font-size: 3rem; }
