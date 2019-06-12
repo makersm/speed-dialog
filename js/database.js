@@ -1,7 +1,7 @@
 $( function() {
     const STORE_NAME = "favorites";
     const FAVICON_URL = "https://www.google.com/s2/favicons?domain=";     //favicon = FAVICON_URL + dataFormat.url
-    var request = window.indexedDB.open("dialog");
+    var request = window.indexedDB.open("dial", 2);
 
     // example
     var data = [
@@ -25,8 +25,8 @@ $( function() {
         '                <img src="./img/plus_icon.png" class="card-img-top" alt="...">\n' +
         '            </div>';
 
-    $('#addFavorites')[0].addEventListener("click", showAddFavoritesModal);
-    $('#saveFavorites')[0].addEventListener("click", addFavorites);
+    $(document).on('click', '#addFavorites', showAddFavoritesModal);
+    $(document).on('click', '#saveFavorites', addFavorites);
 
     /** database section **/
     var db;
@@ -37,7 +37,8 @@ $( function() {
 
     request.onsuccess = function(event) {
         db = request.result;
-    }
+        display();
+    };
 
     request.onerror = function() {
         alert('error');
@@ -66,19 +67,37 @@ $( function() {
 
     function addFavorites() {
         let url = $('input[name="url"]').val();
-        let name = $('input[name="name]').val();
+        let name = $('input[name="name"]').val();
 
-        let objectStore = getObjectStore(STORE_NAME, "readwrite");
+        if(url.length === 0 || name.length === 0) {
+            url.length === 0 ? $('#basic-url').css('border-color', 'orangered') : $('#basic-url').css('border-color', 'inherit');
+            name.length === 0 ? $('#basic-name').css('border-color', 'orangered') : $('#basic-name').css('border-color', 'inherit');
+
+            return;
+        }
+
+        if(url.includes('https://') === false && url.includes('http://') === false) {
+            url ='https://'+url;
+        }
+
+        $('#basic-url').css('border-color', 'inherit');
+        $('#basic-name').css('border-color', 'inherit');
+
+        let objectStore = getObjectStore([STORE_NAME], "readwrite");
 
         let data = $.extend({}, dataFormat);
         data['url'] = url;
         data['name'] = name;
-        data['favicon'] = FAVICON_URL.data['url'];
+        data['favicon'] = FAVICON_URL+data['url'];
 
         let result = objectStore.add(data);
 
         result.onsuccess = function(e) {
             console.log("success");
+            $('input[name="url"]').val('');
+            $('input[name="name"]').val('');
+            $('#exampleModalCenter').modal('hide');
+            display();
         };
 
         result.onerror = function(e) {
@@ -88,7 +107,7 @@ $( function() {
 
     /** display **/
     function display() {
-        var store = getObjectStore(STORE_NAME, "readonly");
+        var store = getObjectStore([STORE_NAME], "readonly");
 
         $('.icons').empty();
 
@@ -120,7 +139,7 @@ $( function() {
                 // move to next
                 cursor.continue();
             } else {
-                cardlist.push($(addFavoritesIconFormat));
+                cardlist.push(addFavoritesIconFormat);
                 let cards = cardlist.join('');
                 let value = String.format(rowFormat, cards);
                 let row = $(value);
