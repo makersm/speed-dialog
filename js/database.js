@@ -3,11 +3,7 @@ $( function() {
     const FAVICON_URL = "https://www.google.com/s2/favicons?domain=";     //favicon = FAVICON_URL + dataFormat.url
     var request = window.indexedDB.open("dial", 2);
 
-    // example
-    var data = [
-        {name: 'naver', url: 'https://naver.com', favicon: 'https://naver.com/favicon.ico'}
-    ];
-
+    // {name: 'naver', url: 'https://naver.com', favicon: 'https://naver.com/favicon.ico'}
     const dataFormat = {
         name: null,
         url: null,
@@ -60,6 +56,16 @@ $( function() {
         return theString;
     };
 
+    function isURL(str) {
+        var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+            '(\\:\\d+)?(\\/[\\%-a-z\\d_.~+]*)*'+ // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+            '(\\#[\\/\\%-a-z\\d_]*)?$','i'); // fragment locator
+        return !!pattern.test(str);
+    }
+
     /** event listener section **/
     function showAddFavoritesModal() {
         $('#exampleModalCenter').modal('show');
@@ -110,6 +116,41 @@ $( function() {
         };
     }
 
+    $(document).on('contextmenu', 'img.favorite', function(event){
+        // Set timeout
+        event.preventDefault();
+        var targetImg = $(event.target);
+
+        let objectStore = getObjectStore([STORE_NAME], "readwrite");
+        let url = targetImg.parent().attr('data-url');
+        targetImg.parent().remove();
+
+        let result = objectStore.delete(url);
+        result.onsuccess = function(e) {
+            console.log("success");
+            display();
+        };
+
+        result.onerror = function(e) {
+            console.log("error::"+e.target.error.name);
+        };
+        return false;
+    });
+
+    /** search button **/
+    $('#search').on('click', function() {
+        let text = $('input[name="searchText"]').val();
+        $('input[name="searchText"]').val('');
+        if(isURL(text)) {
+            location.href = text.includes('https://') === false && text.includes('http://') === false ?
+                'https://'+text : text;
+            return;
+        }
+
+        let query ='http://www.google.com/search?q=' + text;
+        location.href = query;
+    });
+
     /** display **/
     function display() {
         var store = getObjectStore([STORE_NAME], "readonly");
@@ -155,52 +196,6 @@ $( function() {
             }
         };
     }
-
-    function isURL(str) {
-        var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-            '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-            '(\\:\\d+)?(\\/[\\%-a-z\\d_.~+]*)*'+ // port and path
-            '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-            '(\\#[\\/\\%-a-z\\d_]*)?$','i'); // fragment locator
-        return !!pattern.test(str);
-    }
-
-    /** search button **/
-    $('#search').on('click', function() {
-        let text = $('input[name="searchText"]').val();
-        $('input[name="searchText"]').val('');
-        if(isURL(text)) {
-            location.href = text.includes('https://') === false && text.includes('http://') === false ?
-                'https://'+text : text;
-            return;
-        }
-
-        let query ='http://www.google.com/search?q=' + text;
-        location.href = query;
-    });
-
-    var pressTimer;
-    $(document).on('contextmenu', 'img.favorite', function(event){
-        // Set timeout
-        event.preventDefault();
-        var targetImg = $(event.target);
-
-        let objectStore = getObjectStore([STORE_NAME], "readwrite");
-        let url = targetImg.parent().attr('data-url');
-        targetImg.parent().remove();
-
-        let result = objectStore.delete(url);
-        result.onsuccess = function(e) {
-            console.log("success");
-            display();
-        };
-
-        result.onerror = function(e) {
-            console.log("error::"+e.target.error.name);
-        };
-        return false;
-    });
 } );
 
 function moveTofavorites(url) {
