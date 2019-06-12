@@ -181,36 +181,28 @@ $( function() {
     });
 
     var pressTimer;
-    $(document).on('mouseup', 'img.favorite', function(){
-        clearTimeout(pressTimer);
-        clickEvent = true;
-    });
-    $(document).on('mousedown', 'img.favorite', function(event){
+    $(document).on('contextmenu', 'img.favorite', function(event){
         // Set timeout
+        event.preventDefault();
         var targetImg = $(event.target);
-        pressTimer = window.setTimeout(function() {
-            clickEvent = false;
-            let objectStore = getObjectStore([STORE_NAME], "readwrite");
-            let url = targetImg.parent().attr('data-url');
-            targetImg.parent().remove();
 
-            let result = objectStore.delete(url);
-            result.onsuccess = function(e) {
-                console.log("success");
-                display();
-            };
+        let objectStore = getObjectStore([STORE_NAME], "readwrite");
+        let url = targetImg.parent().attr('data-url');
+        targetImg.parent().remove();
 
-            result.onerror = function(e) {
-                console.log("error::"+e.target.error.name);
-            };
-        },1000);
+        let result = objectStore.delete(url);
+        result.onsuccess = function(e) {
+            console.log("success");
+            display();
+        };
+
+        result.onerror = function(e) {
+            console.log("error::"+e.target.error.name);
+        };
         return false;
     });
 } );
 
-var clickEvent = true;
 function moveTofavorites(url) {
-    if(clickEvent){
-        window.location.href = url;
-    }
+    window.location.href = url;
 }
