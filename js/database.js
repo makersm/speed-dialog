@@ -15,8 +15,8 @@ $( function() {
     };
 
     const rowFormat = '<div class="row">{0}</div>';
-    const cardFormat = '<div class="card col-md-3" onclick="javascript:location.href=\'{2}\'">\n' +
-        '                <img src="{0}" class="card-img-top" alt="...">\n' +
+    const cardFormat = '<div class="card col-md-3" onclick="javascript:moveTofavorites(\'{2}\')" data-url="{3}">\n' +
+        '                <img src="{0}" class="card-img-top favorite" alt="...">\n' +
         '                <div class="card-body">\n' +
         '                    <p class="card-text">{1}</p>\n' +
         '                </div>\n' +
@@ -128,7 +128,7 @@ $( function() {
                 req = store.get(cursor.key);
                 req.onsuccess = function (evt) {
                     let value = evt.target.result;
-                    let card = String.format(cardFormat, value['favicon'], value['name'], value['url']);
+                    let card = String.format(cardFormat, value['favicon'], value['name'], value['url'], value['url']);
                     cardlist.push(card);
                 };
 
@@ -179,5 +179,38 @@ $( function() {
         let query ='http://www.google.com/search?q=' + text;
         location.href = query;
     });
+
+    var pressTimer;
+    $(document).on('mouseup', 'img.favorite', function(){
+        clearTimeout(pressTimer);
+        clickEvent = true;
+    });
+    $(document).on('mousedown', 'img.favorite', function(event){
+        // Set timeout
+        var targetImg = $(event.target);
+        pressTimer = window.setTimeout(function() {
+            clickEvent = false;
+            let objectStore = getObjectStore([STORE_NAME], "readwrite");
+            let url = targetImg.parent().attr('data-url');
+            targetImg.parent().remove();
+
+            let result = objectStore.delete(url);
+            result.onsuccess = function(e) {
+                console.log("success");
+                display();
+            };
+
+            result.onerror = function(e) {
+                console.log("error::"+e.target.error.name);
+            };
+        },1000);
+        return false;
+    });
 } );
 
+var clickEvent = true;
+function moveTofavorites(url) {
+    if(clickEvent){
+        window.location.href = url;
+    }
+}
