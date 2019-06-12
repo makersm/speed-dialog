@@ -76,6 +76,11 @@ $( function() {
             return;
         }
 
+        if(!isURL(url)) {
+            $('#basic-url').css('border-color', 'orangered');
+            return;
+        }
+
         if(url.includes('https://') === false && url.includes('http://') === false) {
             url ='https://'+url;
         }
@@ -150,5 +155,29 @@ $( function() {
             }
         };
     }
+
+    function isURL(str) {
+        var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+            '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+        return !!pattern.test(str);
+    }
+
+    /** search button **/
+    $('#search').on('click', function() {
+        let text = $('input[name="searchText"]').val();
+        $('input[name="searchText"]').val('');
+        if(isURL(text)) {
+            location.href = text.includes('https://') === false && text.includes('http://') === false ?
+                'https://'+text : text;
+            return;
+        }
+
+        let query ='http://www.google.com/search?q=' + text;
+        location.href = query;
+    });
 } );
 
